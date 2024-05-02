@@ -1,0 +1,12 @@
+name = "SuiteMarketGet"
+uuid = "6e5d64a5-a931-58ad-bb9b-88fe234b5541"
+authors = ["Cody McCarthy <cmccarth@mtu.edu>"]
+version = "0.0.1"
+
+[deps]
+CodecZlib = "944b1d66-785c-5afd-91f1-9de20f533193"
+HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
+SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+
+[compat]
+julia = "1.10"
