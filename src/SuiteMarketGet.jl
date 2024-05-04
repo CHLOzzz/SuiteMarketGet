@@ -1,13 +1,21 @@
-module SuiteMarketGet
+### This file contains all packages used as well as the basic structure to import as a package.
 
-# Import packages used across all files
-using CodecZlib
-using HTTP
-using MatrixMarket
-using SparseArrays
+#module SuiteMarketGet
 
-export smget
-# Later want to indent these... Nobody can stop me if it works!
-include("smget.jl")
+    # Import packages used across all files
+    using CodecZlib
+    using HTTP
+    using MatrixMarket
+    using SparseArrays
 
-end # module
+    # Import helper files
+    include("smget.jl")
+
+    # Export functions
+    export smget
+
+#end # module
+
+
+# Test code
+smget("https://math.nist.gov/pub/MatrixMarket2/Harwell-Boeing/psadmit/494_bus.haha.lol")
