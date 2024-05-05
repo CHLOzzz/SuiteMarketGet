@@ -18,4 +18,4 @@
 
 
 # Test code
-smget("https://math.nist.gov/pub/MatrixMarket2/Harwell-Boeing/psadmit/494_bus.haha.lol")
+smget("https://suitesparse-collection-website.herokuapp.com/mat/HB/1138_bus.mat")

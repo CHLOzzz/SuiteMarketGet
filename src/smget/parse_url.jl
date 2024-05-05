@@ -3,7 +3,7 @@
 function parse_url(url::String)
     # Initilize return variables in this scope
     is_matrix_market = false
-    file_extension = ""
+    file_extension = nothing
     
     # Determine whether URL is Matrix Market or SuiteSparse
     if occursin("math.nist.gov/pub/MatrixMarket", url) # Matrix Market
