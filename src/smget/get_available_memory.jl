@@ -22,14 +22,17 @@ function get_available_memory()
         return parse(Int, mem_parts[7]) / 1077
 
     elseif Sys.isapple()
-        mem_info = read(`vm_stat`, String)
-        mem_lines = split(mem_info, '\n')
-        free_line = filter(s -> occursin("Pages free", s), mem_lines)[1]
-        mem_free = parse(Int, split(free_line)[3])
-        page_size = 4096  # macOS uses 4096 bytes per memory page
-        mem_bytes = mem_free * page_size
+        # Get page size (B)
+        page_size = read(`bash -c "vm_stat | grep 'page size of' | awk '{print \$8}'"`, String)[1:end-1]
+        page_size = parse(Int, page_size)
+
+        # Get available pages (free pages + inactive pages)
+        available_pages = read(`bash -c "vm_stat | awk '/Pages free/ {free=\$3}/Pages inactive/ {inactive=\$3}END {print (free + inactive)}' | sed 's/\.//'"`, String)[1:end-1]
+        available_pages = parse(Int, available_pages)
+
         # Math simplified for efficiency
-        return mem_bytes / 1073741824
+        # page_size * available_pages for B, / 1024^3 for B to GB, * 0.95 for a buffer
+        return page_size * available_pages / 1130254551
 
     end
 
