@@ -11,11 +11,15 @@ function get_available_memory()
         # / 1024^2 for KB to GB, * 0.95 for a buffer
         return mem_kb / 1103764
 
-    elseif Sys.islinux() # User is on Linux !!!NEEDS TESTING!!!
+    elseif Sys.islinux() # User is on Linux
+        # Get available memory in MB (including SWAP)
         mem_info = read(`free -m`, String)
         mem_lines = split(mem_info, '\n')
         mem_parts = split(mem_lines[2])
-        return parse(Int, mem_parts[4]) / 1024
+
+        # Math simplified for efficiency
+        # / 1024 for MB to GB, * 0.95 for a buffer
+        return parse(Int, mem_parts[7]) / 1077
 
     elseif Sys.isapple() # User is on an Apple product !!!NEEDS TESTING!!!
         mem_info = read(`vm_stat`, String)
