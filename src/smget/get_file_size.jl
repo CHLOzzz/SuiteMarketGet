@@ -1,6 +1,6 @@
 ### Get size of file to download (GB)
 
-function get_file_size(url::String, is_matrix_market::Bool)
+function get_file_size(url::String)
     # Get URL's header
     url_headers = HTTP.head(url).headers
 
