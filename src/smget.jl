@@ -3,9 +3,13 @@
 ### I decided to make each function its own file to make my life easier. Staring at 200 lines of code is confusing...
 
 # Import helper files
-include("smget/parse_url.jl")
 include("smget/get_available_memory.jl")
 include("smget/get_file_size.jl")
+include("smget/get_matrix_market_memory.jl")
+include("smget/get_matrix_market_storage.jl")
+include("smget/parse_url.jl")
+include("smget/get_suitesparse_memory.jl")
+include("smget/get_suitesparse_storage.jl")
 
 function smget(url::String; keep_files::Bool = false, want_vec_x::Bool = false, want_vec_b::Bool = false, debug::Bool = false)
     # Initialize variables determining whether memory allows
@@ -30,33 +34,28 @@ function smget(url::String; keep_files::Bool = false, want_vec_x::Bool = false, 
 
     end
 
+    println(is_matrix_market)
+    println(memory_allows)
+
     # Get matrix / matrices
     if is_matrix_market
         if memory_allows # Matrix Market in memory
-            #
+            return get_matrix_market_memory(url, file_extension)
 
         else # Matrix Market in storage
-            #
+            return get_matrix_market_storage(url, keep_files, file_extension)
 
         end
 
     else
         if memory_allows # SuiteSparse in memory
-            #
+            return get_suitesparse_memory(url, want_vec_x, want_vec_b, file_extension, file_size)
 
         else # SuiteSparse in storage
-            #
+            return get_suitesparse_storage(url, keep_files, want_vec_x, want_vec_b, file_extension)
 
         end
 
     end
-
-
-
-    println(is_matrix_market)
-    println(file_extension)
-    println(file_size)
-    println(available_memory)
-    println(memory_allows)
 
 end # smget
