@@ -1,6 +1,7 @@
 ### This file simply contains the highest level logic to parse the URL and optional arguments.
 ### Comments are also provided on the higher level decision making.
 ### I decided to make each function its own file to make my life easier. Staring at 200 lines of code is confusing...
+### Garbage collection is performed before constructing the sparse matrices
 
 # Import helper files
 include("smget/get_available_memory.jl")
@@ -10,8 +11,10 @@ include("smget/get_matrix_market_storage.jl")
 include("smget/parse_url.jl")
 include("smget/get_suitesparse_memory.jl")
 include("smget/get_suitesparse_storage.jl")
+include("smget/read_MAT_HDF5.jl")
+include("smget/read_MAT_v5.jl")
 
-function smget(url::String; keep_files::Bool = false, want_vec_x::Bool = false, want_vec_b::Bool = false, debug::Bool = false)
+function smget(url::String; keep_files::Bool = false, debug::Bool = false)
     # Initialize variables determining whether memory allows
     file_size = -1
     available_memory = -1
@@ -34,25 +37,58 @@ function smget(url::String; keep_files::Bool = false, want_vec_x::Bool = false, 
 
     end
 
-    println(is_matrix_market)
-    println(memory_allows)
+    # Clear variables no longer needed
+    file_size = nothing
+    available_memory = nothing
 
     # Get matrix / matrices
     if is_matrix_market
+        # Clear variables no longer needed
+        is_matrix_market = nothing
+
         if memory_allows # Matrix Market in memory
-            return get_matrix_market_memory(url, file_extension)
+            # Clear variables no longer needed
+            memory_allows = nothing
+            keep_files = nothing
+
+            # Garbage collect to optimize memory
+            GC.gc()
+
+            return get_matrix_market_memory(url, file_extension) # TODO
 
         else # Matrix Market in storage
-            return get_matrix_market_storage(url, keep_files, file_extension)
+            # Clear variables no longer needed
+            memory_allows = nothing
+
+            # Garbage collect to optimize memory
+            GC.gc()
+
+            return get_matrix_market_storage(url, keep_files, file_extension) # TODO
 
         end
 
     else
+        # Clear variables no longer needed
+        is_matrix_market = nothing
+
         if memory_allows # SuiteSparse in memory
-            return get_suitesparse_memory(url, want_vec_x, want_vec_b, file_extension, file_size)
+            # Clear variables no longer needed
+            memory_allows = nothing
+            keep_files = nothing
+
+            # Garbage collect to optimize memory
+            GC.gc()
+
+            return get_suitesparse_memory(url, file_extension) # TODO
 
         else # SuiteSparse in storage
-            return get_suitesparse_storage(url, keep_files, want_vec_x, want_vec_b, file_extension)
+            # Clear variables no longer needed
+            memory_allows = nothing
+
+            # Garbage collect to optimize memory
+            GC.gc()
+
+            return get_suitesparse_storage(url, keep_files, file_extension) # TODO
 
         end
 
