@@ -1,7 +1,4 @@
 ### Read .mat files in HDF5 format
-### Two override functions provided:
-### - read_MAT_HDF5(data::Vector{T}, data_buffer::IOBuffer): HDF5 data being handled in memory
-### - read_MAT_HDF5(data__Vector{T}, data_buffer::IOStream, keep_files::Bool): HDF5 data being handled in storage
 
 ## Override for when input is IOBuffer; handling in memory
 function read_MAT_HDF5(data::Vector{T}, data_buffer::IOBuffer) where T <: Unsigned
@@ -51,8 +48,4 @@ function read_MAT_HDF5(data::Vector{T}, data_buffer::IOBuffer) where T <: Unsign
     # Return constructed SparseArray
     return sparse(row_inds, col_inds, data, m, n)
 
-end
-
-## Override for when input is IOStream; handling in storage
-function read_MAT_HDF5(data, data_buffer::IOStream, keep_files::Bool)
 end
