@@ -231,7 +231,7 @@ function read_v5_sparse(f::IO, swap_bytes::Bool, dimensions::Vector{Int32}, flag
 end
 
 function read_v5_string(f::IO, swap_bytes::Bool, dimensions::Vector{Int32})
-    (dtype, nbytes, hbytes) = read_header(f, swap_bytes)
+    (dtype, nbytes, hbytes) = read_v5_header(f, swap_bytes)
     if dtype <= 2 || dtype == 16
         # If dtype <= 2, this may give an error on non-ASCII characters, since the string
         # would be ISO-8859-1 and not UTF-8. However, MATLAB 2012b always saves strings with
