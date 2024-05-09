@@ -230,6 +230,55 @@ function read_v5_sparse(f::IO, swap_bytes::Bool, dimensions::Vector{Int32}, flag
     SparseMatrixCSC(m, n, jc, ir, pr)
 end
 
+function read_v5_string(f::IO, swap_bytes::Bool, dimensions::Vector{Int32})
+    (dtype, nbytes, hbytes) = read_header(f, swap_bytes)
+    if dtype <= 2 || dtype == 16
+        # If dtype <= 2, this may give an error on non-ASCII characters, since the string
+        # would be ISO-8859-1 and not UTF-8. However, MATLAB 2012b always saves strings with
+        # a 2-byte encoding in v6 format, and saves UTF-8 in v7 format. Thus, this may never
+        # happen in the wild.
+        chars = read!(f, Vector{UInt8}(undef, nbytes))
+        if dimensions[1] <= 1
+            data = String(chars)
+        else
+            data = Vector{String}(undef, dimensions[1])
+            for i = 1:dimensions[1]
+                data[i] = rstrip(String(chars[i:dimensions[1]:end]))
+            end
+        end
+    elseif dtype <= 4 || dtype == 17
+        # Technically, if dtype == 3 or dtype == 4, this is ISO-8859-1 and not Unicode.
+        # However, the first 256 Unicode code points are derived from ISO-8859-1, so UCS-2
+        # is a superset of 2-byte ISO-8859-1.
+        chars = read_v5_bswap(f, swap_bytes, UInt16, convert(Int, div(nbytes, 2)))
+        bufs = [IOBuffer() for i = 1:dimensions[1]]
+        i = 1
+        while i <= length(chars)
+            for j = 1:dimensions[1]
+                char = convert(Char, chars[i])
+                if 255 < convert(UInt32, char)
+                    # Newer versions of MATLAB seem to write some mongrel UTF-8...
+                    char = String([truncate_to_uint8(chars[i] >> 8), truncate_to_uint8(chars[i])])[1]
+                end
+                write(bufs[j], char)
+                i += 1
+            end
+        end
+
+        if dimensions[1] == 0
+            data = ""
+        elseif dimensions[1] == 1
+            data = String(take!(bufs[1]))
+        else
+            data = String[rstrip(String(take!(buf))) for buf in bufs]
+        end
+    else
+        error("Unsupported string type")
+    end
+    skip_v5_padding(f, nbytes, hbytes)
+    data
+end
+
 # Read matrix data
 function read_v5_matrix(f::IO, swap_bytes::Bool)
     (dtype, nbytes) = read_v5_header(f, swap_bytes)
