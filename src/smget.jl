@@ -48,6 +48,6 @@ function smget_online(file_location::String, debug::Bool, keep_files::Bool, e1::
     e1 = nothing
 
     # Return sparse array after "deeper" files construct it
-    return parse_data(data_http, file_location, debug, keep_files:Bool)
+    return parse_data(data_http, file_location, debug, keep_files)
 
 end # smget_online
