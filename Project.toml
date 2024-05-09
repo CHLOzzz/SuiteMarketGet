@@ -4,6 +4,9 @@ authors = ["CHLOzzz <chloemccarthyemail@gmail.com>"]
 version = "0.1.0"
 
 [deps]
+BufferedStreams = "e1450e63-4bb3-523b-b2a4-4ffa8c0fd77d"
+CodecZlib = "944b1d66-785c-5afd-91f1-9de20f533193"
 HDF5 = "f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f"
 HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 MAT = "23992714-dd62-5051-b70f-ba57cb901cac"
+SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"

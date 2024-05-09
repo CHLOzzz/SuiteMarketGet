@@ -27,11 +27,11 @@
 # http://www.mathworks.com/help/pdf_doc/matlab/matfile_format.pdf
 
 # Override function for MAT_v4.checkv4
-function repurposed_MAT_v4()
-
+function repurposed_MAT_v4(data_http::HTTP.Messages.Response, data_buffer::IOBuffer, debug::Bool, keep_data::Bool)
+    println("v4 not supported yet...")
 end # repurposed_MAT_v4
 
 # Override function for MAT_v4.matopen
-function repurposed_MAT_v4()
-
+function repurposed_MAT_v4(data_http::HTTP.Messages.Response, data_buffer::IOBuffer, debug::Bool, keep_data::Bool, swap_bytes::Bool)
+    println("v4 not supported yet...")
 end # repurposed_MAT_v4

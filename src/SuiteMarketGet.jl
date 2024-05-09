@@ -8,9 +8,12 @@
 
 module SuiteMarketGet
     # Import package dependencies
+    using BufferedStreams
+    using CodecZlib
     using HDF5
     using HTTP
     using MAT
+    using SparseArrays
 
     # Import helper files
     include("smget.jl")

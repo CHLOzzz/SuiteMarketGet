@@ -25,6 +25,8 @@
 # MATLAB's file format documentation can be found at
 # http://www.mathworks.com/help/pdf_doc/matlab/matfile_format.pdf
 
+complex_v5_array(a, b) = complex.(a, b)
+
 mutable struct RepurposedMatlabv5File <: HDF5.H5DataStore
     ios::IOStream
     swap_bytes::Bool
@@ -33,9 +35,21 @@ mutable struct RepurposedMatlabv5File <: HDF5.H5DataStore
     RepurposedMatlabv5File(ios, swap_bytes) = new(ios, swap_bytes)
 end
 
+const v5_miMATRIX = 14
+const v5_miCOMPRESSED = 15
+const v5_mxCELL_CLASS = 1
+const v5_mxSTRUCT_CLASS = 2
+const v5_mxOBJECT_CLASS = 3
+const v5_mxCHAR_CLASS = 4
+const v5_mxSPARSE_CLASS = 5
+const v5_mxOPAQUE_CLASS = 17
+const v5_READ_TYPES = Type[
+    Int8, UInt8, Int16, UInt16, Int32, UInt32, Float32, Union{},
+    Float64, Union{}, Union{}, Int64, UInt64]
+
 function repurposed_MAT_v5(data_http::HTTP.Messages.Response, data_buffer::IOBuffer, debug::Bool, keep_files::Bool, endian_indicator::UInt16)
     # Obtain Matlabv5File stream
-    mat_v5_file = Matlabv5File(data_buffer, endian_indicator == 0x494D)
+    mat_v5_file = RepurposedMatlabv5File(data_buffer, endian_indicator == 0x494D)
 
     # Read matfile
     mat_v5_contents = mat_v5_read(mat_v5_file)
@@ -85,7 +99,7 @@ end
 # Read data element as encoded type
 function read_v5_data(f::IO, swap_bytes::Bool)
     (dtype, nbytes, hbytes) = read_v5_header(f, swap_bytes)
-    read_type = READ_TYPES[dtype]
+    read_type = v5_READ_TYPES[dtype]
     data = read_v5_bswap(f, swap_bytes, read_type, Int(div(nbytes, sizeof(read_type))))
     skip_v5_padding(f, nbytes, hbytes)
     data
@@ -96,7 +110,7 @@ end
 # scalars
 function read_v5_data(f::IO, swap_bytes::Bool, ::Type{T}, dimensions::Vector{Int32}) where T
     (dtype, nbytes, hbytes) = read_v5_header(f, swap_bytes)
-    read_type = READ_TYPES[dtype]
+    read_type = v5_READ_TYPES[dtype]
     if (read_type === UInt8) && (T === Bool)
         read_type = Bool
     end
@@ -123,12 +137,105 @@ function read_v5_cell(f::IO, swap_bytes::Bool, dimensions::Vector{Int32})
     data
 end
 
+function read_v5_struct(f::IO, swap_bytes::Bool, dimensions::Vector{Int32}, is_object::Bool)
+    if is_object
+        class = String(read_v5_element(f, swap_bytes, UInt8))
+    end
+    field_length = read_v5_element(f, swap_bytes, Int32)[1]
+    field_names = read_v5_element(f, swap_bytes, UInt8)
+    n_fields = div(length(field_names), field_length)
+
+    # Get field names as strings
+    field_name_strings = Vector{String}(undef, n_fields)
+    n_el = prod(dimensions)
+    for i = 1:n_fields
+        sname = field_names[(i-1)*field_length+1:i*field_length]
+        index = something(findfirst(iszero, sname), 0)
+        field_name_strings[i] = String(index == 0 ? sname : sname[1:index-1])
+    end
+
+    data = Dict{String, Any}()
+    sizehint!(data, n_fields+1)
+    if is_object
+        data["class"] = class
+    end
+
+    if n_el == 1
+        # Read a single struct into a dict
+        for field_name in field_name_strings
+            data[field_name] = read_v5_matrix(f, swap_bytes)[2]
+        end
+    else
+        # Read multiple structs into a dict of arrays
+        for field_name in field_name_strings
+            data[field_name] = Array{Any}(undef, dimensions...)
+        end
+        for i = 1:n_el
+            for field_name in field_name_strings
+                data[field_name][i] = read_v5_matrix(f, swap_bytes)[2]
+            end
+        end
+    end
+
+    data
+end
+
+function v5_plusone!(A)
+    for i = 1:length(A)
+        @inbounds A[i] += 1
+    end
+    A
+end
+
+function read_v5_sparse(f::IO, swap_bytes::Bool, dimensions::Vector{Int32}, flags::Vector{UInt32})
+    local m::Int, n::Int
+    if length(dimensions) == 2
+        (m, n) = dimensions
+    elseif length(dimensions) == 1
+        m = dimensions[1]
+        n = 1
+    elseif length(dimensions) == 0
+        m = 0
+        n = 0
+    else
+        error("invalid dimensions encountered for sparse array")
+    end
+
+    m = isempty(dimensions) ? 0 : dimensions[1]
+    n = length(dimensions) <= 1 ? 0 : dimensions[2]
+    ir = v5_plusone!(convert(Vector{Int}, read_v5_element(f, swap_bytes, Int32)))
+    jc = v5_plusone!(convert(Vector{Int}, read_v5_element(f, swap_bytes, Int32)))
+    if (flags[1] & (1 << 9)) != 0 # logical
+        # WTF. For some reason logical sparse matrices are tagged as doubles.
+        pr = read_v5_element(f, swap_bytes, Bool)
+    else
+        pr = read_v5_data(f, swap_bytes)
+        if (flags[1] & (1 << 11)) != 0 # complex
+            pr = complex_v5_array(pr, read_v5_data(f, swap_bytes))
+        end
+    end
+    if length(ir) > length(pr)
+        # Fix for Issue #169, xref https://github.com/JuliaLang/julia/pull/40523
+        #= 
+        # The following expression must be obeyed according to
+        # https://github.com/JuliaLang/julia/blob/b3e4341d43da32f4ab6087230d98d00b89c8c004/stdlib/SparseArrays/src/sparsematrix.jl#L86-L90
+        @debug "SparseMatrixCSC" m n jc ir pr
+        @debug "SparseMatrixCSC check " length(jc) n+1 jc[end]-1 length(ir) length(pr) begin
+            length(jc) == n + 1 && jc[end] - 1 == length(ir) == length(pr)
+        end
+        =#
+        # Truncate rowvals (ir) to the be the same length as the non-zero elements (pr)
+        resize!(ir, length(pr))
+    end
+    SparseMatrixCSC(m, n, jc, ir, pr)
+end
+
 # Read matrix data
 function read_v5_matrix(f::IO, swap_bytes::Bool)
     (dtype, nbytes) = read_v5_header(f, swap_bytes)
-    if dtype == miCOMPRESSED
+    if dtype == v5_miCOMPRESSED
         return read_v5_matrix(ZlibDecompressorStream(IOBuffer(read!(f, Vector{UInt8}(undef, nbytes)))), swap_bytes)
-    elseif dtype != miMATRIX
+    elseif dtype != v5_miMATRIX
         error("Unexpected data type")
     elseif nbytes == 0
         # If one creates a cell array using
@@ -144,7 +251,7 @@ function read_v5_matrix(f::IO, swap_bytes::Bool)
     flags = read_v5_element(f, swap_bytes, UInt32)
     class = flags[1] & 0xFF
 
-    if class == mxOPAQUE_CLASS
+    if class == v5_mxOPAQUE_CLASS
         s0 = read_v5_data(f, swap_bytes)
         s1 = read_v5_data(f, swap_bytes)
         s2 = read_v5_data(f, swap_bytes)
@@ -156,13 +263,13 @@ function read_v5_matrix(f::IO, swap_bytes::Bool)
     name = String(read_v5_element(f, swap_bytes, UInt8))
 
     local data
-    if class == mxCELL_CLASS
+    if class == v5_mxCELL_CLASS
         data = read_v5_cell(f, swap_bytes, dimensions)
-    elseif class == mxSTRUCT_CLASS || class == mxOBJECT_CLASS
-        data = read_struct(f, swap_bytes, dimensions, class == mxOBJECT_CLASS)
-    elseif class == mxSPARSE_CLASS
-        data = read_sparse(f, swap_bytes, dimensions, flags)
-    elseif class == mxCHAR_CLASS && length(dimensions) <= 2
+    elseif class == v5_mxSTRUCT_CLASS || class == v5_mxOBJECT_CLASS
+        data = read_v5_struct(f, swap_bytes, dimensions, class == v5_mxOBJECT_CLASS)
+    elseif class == v5_mxSPARSE_CLASS
+        data = read_v5_sparse(f, swap_bytes, dimensions, flags)
+    elseif class == v5_mxCHAR_CLASS && length(dimensions) <= 2
         data = read_string(f, swap_bytes, dimensions)
     elseif class == mxFUNCTION_CLASS
         data = read_v5_matrix(f, swap_bytes)
@@ -173,7 +280,7 @@ function read_v5_matrix(f::IO, swap_bytes::Bool)
             convert_type = CONVERT_TYPES[class]
             data = read_v5_data(f, swap_bytes, convert_type, dimensions)
             if (flags[1] & (1 << 11)) != 0 # complex
-                data = complex_array(data, read_v5_data(f, swap_bytes, convert_type, dimensions))
+                data = complex_v5_array(data, read_v5_data(f, swap_bytes, convert_type, dimensions))
             end
         end
     end
