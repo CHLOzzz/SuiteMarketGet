@@ -2,3 +2,6 @@ name = "SuiteMarketGet"
 uuid = "7173aebf-f1ad-4c42-a712-8ab7c6c5167c"
 authors = ["CHLOzzz <chloemccarthyemail@gmail.com>"]
 version = "0.1.0"
+
+[deps]
+HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"

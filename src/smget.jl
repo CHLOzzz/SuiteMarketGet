@@ -1,6 +1,7 @@
 function smget(file_location::String; debug::Bool = false)
     # DEBUG #
     if debug println("Attempting to open as locally stored file...") end
+    # DEBUG #
     
     # Assume location is a local path and attempt to open
     try
@@ -18,6 +19,7 @@ end # smget
 function smget_online(file_location::String, e1::SystemError)
     # DEBUG #
     if debug println("Not a local file, attempting to fetch from URL...") end
+    # DEBUG #
 
     # Assume location is an online path and attempt to fetch
     try
