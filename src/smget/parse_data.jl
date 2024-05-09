@@ -33,8 +33,14 @@ function parse_data(data_stream::IOStream, file_location::String, debug::Bool)
         # Obtain matrix
         toReturn = read(mat_stream)["Problem"]["A"]
 
-        # Close stream & garbage collect
+        # DEBUG #
+        if debug println("Final garbage collection, then returning...") end
+        # DEBUG #
+
+        # Close stream, clear variables, garbage collect
         close(mat_stream)
+        debug = nothing
+        file_location = nothing
         mat_stream = nothing
         GC.gc()
 
@@ -48,7 +54,14 @@ function parse_data(data_stream::IOStream, file_location::String, debug::Bool)
 end
 
 ## Data was fetched from an online source
-function parse_data(data_http::HTTP.Messages.Response, debug::Bool, keep_data::Bool)
-    println("Online file!")
+function parse_data(data_http::HTTP.Messages.Response, file_location::String, debug::Bool, keep_data::Bool)
+    # DEBUG #
+    if debug println("Attempting to determine file type from URL or response headers...") end
+    # DEBUG #
+
+    # Obtain file extension
+    file_extension = get_online_extension(data_http, file_location)
+    
+    println(file_extension)
 
 end

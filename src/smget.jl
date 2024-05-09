@@ -2,6 +2,7 @@
 ### Code here determines how to fetch the data - local file or online source
 
 # Include helper files
+include("smget/get_online_extension.jl")
 include("smget/parse_data.jl")
 
 function smget(file_location::String; debug::Bool = false, keep_files::Bool = false)
@@ -47,6 +48,6 @@ function smget_online(file_location::String, debug::Bool, keep_files::Bool, e1::
     e1 = nothing
 
     # Return sparse array after "deeper" files construct it
-    return parse_data(data_http, debug, keep_files:Bool)
+    return parse_data(data_http, file_location, debug, keep_files:Bool)
 
 end # smget_online
