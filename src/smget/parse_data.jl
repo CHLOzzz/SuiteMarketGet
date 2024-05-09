@@ -61,6 +61,12 @@ function parse_data(data_http::HTTP.Messages.Response, file_location::String, de
 
     # Obtain file extension
     file_extension = get_online_extension(data_http, file_location)
+
+    # If .mat file, use repurposed MAT.jl code to read file
+    if file_extension == ".mat"
+        return read_mat(data_http, debug, keep_data)
+
+    end # if
     
     println(file_extension)
 
