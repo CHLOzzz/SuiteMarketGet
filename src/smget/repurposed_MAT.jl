@@ -27,11 +27,11 @@ const MAT_HDF5_HEADER = UInt8[0x89, 0x48, 0x44, 0x46, 0x0d, 0x0a, 0x1a, 0x0a]
 
 function repurposed_MAT(data_http::HTTP.Messages.Response, data_buffer::IOBuffer, debug::Bool, keep_data::Bool)
     # Check for MAT v4 file
-    (isv4, swap_bytes) = repurposed_MAT_v4(data_http, data_buffer, debug, keep_data)
-    if isv4
-        return repurposed_MAT_v4(data_http, data_buffer, debug, keep_data, swap_bytes)
+    #(isv4, swap_bytes) = repurposed_MAT_v4(data_http, data_buffer, debug, keep_data)
+    #if isv4
+    #    return repurposed_MAT_v4(data_http, data_buffer, debug, keep_data, swap_bytes)
 
-    end
+    #end
     
     # Test whether this is a MAT file
     if sizeof(data_buffer) < 128
