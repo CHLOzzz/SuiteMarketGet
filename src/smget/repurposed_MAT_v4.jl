@@ -33,7 +33,7 @@ function repurposed_MAT_v4(data_buffer::IOBuffer)
         swap_bytes = false
         return (true, swap_bytes)
     else
-        seek(f, 0)   
+        seek(data_buffer, 0)   
         M, O, P, T, mrows, ncols, imagf, namlen = read_v4_header(data_buffer, true)
         if 0<=M<=4 && O == 0 && 0<=P<=5 && 0<=T<=2 && mrows>=0 && ncols>=0 && 0<=imagf<=1 && namlen>0
             swap_bytes = true
