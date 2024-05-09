@@ -47,6 +47,10 @@ const v5_mxOPAQUE_CLASS = 17
 const v5_READ_TYPES = Type[
     Int8, UInt8, Int16, UInt16, Int32, UInt32, Float32, Union{},
     Float64, Union{}, Union{}, Int64, UInt64]
+const v5_CONVERT_TYPES = Type[
+    Union{}, Union{}, Union{}, Union{},
+    Union{}, Float64, Float32, Int8, UInt8,
+    Int16, UInt16, Int32, UInt32, Int64, UInt64]
 
 function repurposed_MAT_v5(data_http::HTTP.Messages.Response, data_buffer::IOBuffer, debug::Bool, keep_files::Bool, endian_indicator::UInt16)
     # Obtain Matlabv5File stream
@@ -327,7 +331,7 @@ function read_v5_matrix(f::IO, swap_bytes::Bool)
         if (flags[1] & (1 << 9)) != 0 # logical
             data = read_v5_data(f, swap_bytes, Bool, dimensions)
         else
-            convert_type = CONVERT_TYPES[class]
+            convert_type = v5_CONVERT_TYPES[class]
             data = read_v5_data(f, swap_bytes, convert_type, dimensions)
             if (flags[1] & (1 << 11)) != 0 # complex
                 data = complex_v5_array(data, read_v5_data(f, swap_bytes, convert_type, dimensions))
