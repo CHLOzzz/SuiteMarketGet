@@ -270,7 +270,7 @@ function read_v5_matrix(f::IO, swap_bytes::Bool)
     elseif class == v5_mxSPARSE_CLASS
         data = read_v5_sparse(f, swap_bytes, dimensions, flags)
     elseif class == v5_mxCHAR_CLASS && length(dimensions) <= 2
-        data = read_string(f, swap_bytes, dimensions)
+        data = read_v5_string(f, swap_bytes, dimensions)
     elseif class == mxFUNCTION_CLASS
         data = read_v5_matrix(f, swap_bytes)
     else
