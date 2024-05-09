@@ -8,7 +8,7 @@ function smget(file_location::String; debug::Bool = false)
         data_stream = open(file_location)
 
     catch e1 # Not a valid local path: Attempt an online fetch
-        return smget_online(file_location, e1)
+        return smget_online(file_location, debug, e1)
 
     end # try
 
@@ -16,7 +16,7 @@ function smget(file_location::String; debug::Bool = false)
 
 end # smget
 
-function smget_online(file_location::String, e1::SystemError)
+function smget_online(file_location::String, debug::Bool, e1::SystemError)
     # DEBUG #
     if debug println("Not a local file, attempting to fetch from URL...") end
     # DEBUG #
