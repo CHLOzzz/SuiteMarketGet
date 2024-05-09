@@ -2,6 +2,9 @@ function smget(file_location::String; debug::Bool = false)
     # DEBUG #
     if debug println("Attempting to open as locally stored file...") end
     # DEBUG #
+
+    # Initialize "data_stream" in this scope
+    data_stream = nothing
     
     # Assume location is a local path and attempt to open
     try
@@ -26,7 +29,7 @@ function smget_online(file_location::String, debug::Bool, e1::SystemError)
         data = HTTP.get(file_location).body
 
     catch e2 # Not a valid URL or local path: ERROR
-        error("Inputted String for 'file_location' isn't detected to be a local path or a URL...", e1, e2)
+        error("Inputted String for 'file_location' isn't detected to be a local path or a URL...\n\n", e1, e2)
 
     end # try
 
