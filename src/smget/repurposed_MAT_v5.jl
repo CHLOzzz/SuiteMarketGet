@@ -53,14 +53,30 @@ const v5_CONVERT_TYPES = Type[
     Int16, UInt16, Int32, UInt32, Int64, UInt64]
 
 function repurposed_MAT_v5(data_http::HTTP.Messages.Response, data_buffer::IOBuffer, debug::Bool, keep_files::Bool, endian_indicator::UInt16)
+    # DEBUG #
+    if debug println("MAT v5 file detected, reading contents with MAT_v5.jl repurposed code...") end
+    # DEBUG #
+    
     # Obtain Matlabv5File stream
     mat_v5_file = RepurposedMatlabv5File(data_buffer, endian_indicator == 0x494D)
 
     # Read matfile
     mat_v5_contents = mat_v5_read(mat_v5_file)
 
+    # DEBUG #
+    if debug println("Garbage collecting before returning...") end
+    # DEBUG #
+
     # Obtain sparse array
     toReturn = mat_v5_contents["Problem"]["A"]
+
+    # Garbage collect
+    data_http = nothing
+    data_buffer = nothing
+    debug = nothing
+    keep_files = nothing
+    mat_v5_file = nothing
+    GC.gc()
 
     return toReturn
 
