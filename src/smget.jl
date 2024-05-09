@@ -7,6 +7,7 @@ include("smget/parse_data.jl")
 include("smget/read_mat.jl")
 include("smget/repurposed_MAT.jl")
 include("smget/repurposed_MAT_HDF5.jl")
+include("smget/repurposed_MAT_v4.jl")
 include("smget/repurposed_MAT_v5.jl")
 
 function smget(file_location::String; debug::Bool = false, keep_files::Bool = false)
