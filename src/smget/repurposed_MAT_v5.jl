@@ -42,6 +42,7 @@ const v5_mxSTRUCT_CLASS = 2
 const v5_mxOBJECT_CLASS = 3
 const v5_mxCHAR_CLASS = 4
 const v5_mxSPARSE_CLASS = 5
+const v5_mxFUNCTION_CLASS = 16
 const v5_mxOPAQUE_CLASS = 17
 const v5_READ_TYPES = Type[
     Int8, UInt8, Int16, UInt16, Int32, UInt32, Float32, Union{},
@@ -320,7 +321,7 @@ function read_v5_matrix(f::IO, swap_bytes::Bool)
         data = read_v5_sparse(f, swap_bytes, dimensions, flags)
     elseif class == v5_mxCHAR_CLASS && length(dimensions) <= 2
         data = read_v5_string(f, swap_bytes, dimensions)
-    elseif class == mxFUNCTION_CLASS
+    elseif class == v5_mxFUNCTION_CLASS
         data = read_v5_matrix(f, swap_bytes)
     else
         if (flags[1] & (1 << 9)) != 0 # logical
