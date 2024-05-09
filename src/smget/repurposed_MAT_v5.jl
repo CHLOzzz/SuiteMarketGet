@@ -28,7 +28,7 @@
 complex_v5_array(a, b) = complex.(a, b)
 
 mutable struct RepurposedMatlabv5File <: HDF5.H5DataStore
-    ios::IOStream
+    ios::IOBuffer
     swap_bytes::Bool
     varnames::Dict{String, Int64}
 
