@@ -34,15 +34,15 @@ function repurposed_MAT(data_http::HTTP.Messages.Response, data_buffer::IOBuffer
     end
     
     # Test whether this is a MAT file
-    #if sizeof(data_buffer) < 128
-    #    close(data_buffer)
-    #    data_http = nothing
-    #    debug = nothing
-    #    keep_data = nothing
-    #    GC.gc()
-    #    error("File is too small to be a supported MAT file!")
+    if sizeof(data_buffer) < 128
+        close(data_buffer)
+        data_http = nothing
+        debug = nothing
+        keep_data = nothing
+        GC.gc()
+        error("File is too small to be a supported MAT file!")
 
-    #end
+    end
 
     # Check for MAT v5 file
     seek(data_buffer, 124)

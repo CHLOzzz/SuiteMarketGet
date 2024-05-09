@@ -46,7 +46,7 @@ end # repurposed_MAT_v4
 
 # Override function for MAT_v4.matopen
 function repurposed_MAT_v4(data_http::HTTP.Messages.Response, data_buffer::IOBuffer, debug::Bool, keep_data::Bool, swap_bytes::Bool)
-    println("v4 not supported yet...")
+    error("MAT v4 files are not yet supported...")
 
 end # repurposed_MAT_v4
 
