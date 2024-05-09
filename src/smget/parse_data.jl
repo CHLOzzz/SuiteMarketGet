@@ -4,7 +4,8 @@
 ## Data is already locally stored
 function parse_data(data_stream::IOStream, file_location::String, debug::Bool)
     # Obtain file extension, made easy with guarenteed valid file path
-    _, file_extension = lowercase(splitext(file_location))
+    _, file_extension = splitext(file_location)
+    file_extension = lowercase(file_extension)
 
     # If .mat file, use MAT package to return SparseArray
     if file_extension == ".mat"
