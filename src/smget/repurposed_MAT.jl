@@ -22,10 +22,10 @@
 # OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-function repurposed_MAT(data_http::HTTP.Messages.Response, data_buffer::IOBuffer, debug::Bool, keep_data::Bool)
-    # Define HDF5 header constant
-    const HDF5_HEADER = UInt8[0x89, 0x48, 0x44, 0x46, 0x0d, 0x0a, 0x1a, 0x0a]
+# Define HDF5 header constant
+const MAT_HDF5_HEADER = UInt8[0x89, 0x48, 0x44, 0x46, 0x0d, 0x0a, 0x1a, 0x0a]
 
+function repurposed_MAT(data_http::HTTP.Messages.Response, data_buffer::IOBuffer, debug::Bool, keep_data::Bool)
     # Check for MAT v4 file
     (isv4, swap_bytes) = repurposed_MAT_v4(data_buffer)
     if isv4
@@ -57,7 +57,7 @@ function repurposed_MAT(data_http::HTTP.Messages.Response, data_buffer::IOBuffer
     # Check for HDF5 file
     for offset = 512:512:fs-8
         seek(data_buffer, offset)
-        if read!(data_buffer, Vector{UInt8}(undef, 8)) == HDF5_HEADER
+        if read!(data_buffer, Vector{UInt8}(undef, 8)) == MAT_HDF5_HEADER
             close(data_buffer)
             return repurposed_MAT_HDF5(data_http, data_buffer, debug, keep_data)
         end
