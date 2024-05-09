@@ -1,3 +1,6 @@
+# Include helper files
+include("smget/parse_data.jl")
+
 function smget(file_location::String; debug::Bool = false)
     # DEBUG #
     if debug println("Attempting to open as locally stored file...") end
@@ -5,24 +8,17 @@ function smget(file_location::String; debug::Bool = false)
 
     # Initialize "data_stream" in this scope
     data_stream = nothing
-    data = nothing
     
     # Assume location is a local path and attempt to open
     try
         data_stream = open(file_location)
-        data = read(data_stream)
-        close(data_stream)
-        data_stream = nothing
 
     catch e1 # Not a valid local path: Attempt an online fetch
         return smget_online(file_location, debug, e1)
 
     end # try
 
-    # Garbage collect
-    GC.gc()
-
-    return data
+    return parse_data(data_stream, file_location, debug)
 
 end # smget
 
@@ -32,11 +28,11 @@ function smget_online(file_location::String, debug::Bool, e1::SystemError)
     # DEBUG #
 
     # Initialize "data" in this scope
-    data = nothing
+    data_http = nothing
 
     # Assume location is an online path and attempt to fetch
     try
-        data = HTTP.get(file_location).body
+        data_http = HTTP.get(file_location)
 
     catch e2 # Not a valid URL or local path: ERROR
         error("Inputted String for 'file_location' isn't detected to be a local path or a URL...\n\n", e1, e2)
@@ -46,9 +42,6 @@ function smget_online(file_location::String, debug::Bool, e1::SystemError)
     # Clear SystemError; won't be necessary here
     e1 = nothing
 
-    # Garbage collect
-    GC.gc()
-
-    return data
+    return parse_data(data_http, debug)
 
 end # smget_online
