@@ -34,7 +34,7 @@ function repurposed_MAT(data_http::HTTP.Messages.Response, data_buffer::IOBuffer
     end
     
     # Test whether this is a MAT file
-    if sizeof(data_buffer) < 128
+    if sizeof(data_http.body) < 128
         close(data_buffer)
         data_http = nothing
         debug = nothing
