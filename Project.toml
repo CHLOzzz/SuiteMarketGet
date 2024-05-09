@@ -4,5 +4,6 @@ authors = ["CHLOzzz <chloemccarthyemail@gmail.com>"]
 version = "0.1.0"
 
 [deps]
+HDF5 = "f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f"
 HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 MAT = "23992714-dd62-5051-b70f-ba57cb901cac"

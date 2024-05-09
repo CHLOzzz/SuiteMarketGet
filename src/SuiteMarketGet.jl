@@ -8,6 +8,7 @@
 
 module SuiteMarketGet
     # Import package dependencies
+    using HDF5
     using HTTP
     using MAT
 
