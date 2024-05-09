@@ -1,7 +1,10 @@
+### File containing the exported function "smget.jl"
+### Code here determines how to fetch the data - local file or online source
+
 # Include helper files
 include("smget/parse_data.jl")
 
-function smget(file_location::String; debug::Bool = false)
+function smget(file_location::String; debug::Bool = false, keep_files::Bool = false)
     # DEBUG #
     if debug println("Attempting to open as locally stored file...") end
     # DEBUG #
@@ -14,15 +17,16 @@ function smget(file_location::String; debug::Bool = false)
         data_stream = open(file_location)
 
     catch e1 # Not a valid local path: Attempt an online fetch
-        return smget_online(file_location, debug, e1)
+        return smget_online(file_location, debug, keep_files, e1)
 
     end # try
 
+    # Return sparse array after "deeper" files construct it
     return parse_data(data_stream, file_location, debug)
 
 end # smget
 
-function smget_online(file_location::String, debug::Bool, e1::SystemError)
+function smget_online(file_location::String, debug::Bool, keep_files::Bool, e1::SystemError)
     # DEBUG #
     if debug println("Not a local file, attempting to fetch from URL...") end
     # DEBUG #
@@ -42,6 +46,7 @@ function smget_online(file_location::String, debug::Bool, e1::SystemError)
     # Clear SystemError; won't be necessary here
     e1 = nothing
 
-    return parse_data(data_http, debug)
+    # Return sparse array after "deeper" files construct it
+    return parse_data(data_http, debug, keep_files:Bool)
 
 end # smget_online
