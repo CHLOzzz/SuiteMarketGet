@@ -24,6 +24,9 @@ function smget_online(file_location::String, debug::Bool, e1::SystemError)
     if debug println("Not a local file, attempting to fetch from URL...") end
     # DEBUG #
 
+    # Initialize "data" in this scope
+    data = nothing
+
     # Assume location is an online path and attempt to fetch
     try
         data = HTTP.get(file_location).body
