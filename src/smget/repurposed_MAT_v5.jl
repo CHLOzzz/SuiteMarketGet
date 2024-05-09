@@ -59,8 +59,10 @@ function repurposed_MAT_v5(data_http::HTTP.Messages.Response, data_buffer::IOBuf
     # Read matfile
     mat_v5_contents = mat_v5_read(mat_v5_file)
 
-    # Return for troubleshooting
-    return mat_v5_contents
+    # Obtain sparse array
+    toReturn = mat_v5_contents["Problem"]["A"]
+
+    return toReturn
 
 end # repurposed_MAT_v5
 
